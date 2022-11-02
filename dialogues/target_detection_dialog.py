@@ -49,16 +49,16 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
         
-        self.pbOpenFile.clicked.connect(self.set_path_to_file)
-        self.pbSetCoord.clicked.connect(self.set_coordinates)
-        self.pbGenerate.clicked.connect(self.generate)
-        self.pbDone.clicked.connect(self.close)
+        self.pb_open_file.clicked.connect(self.set_path_to_file)
+        self.pb_set_coord.clicked.connect(self.set_coordinates)
+        self.pb_generate.clicked.connect(self.generate)
+        self.pb_done.clicked.connect(self.close)
         
-        self.sldThreshold.valueChanged.connect(self.set_threshold_by_slider)
+        self.sld_threshold.valueChanged.connect(self.set_threshold_by_slider)
         
-        self.leXCoord.editingFinished.connect(self.set_x_coord)
-        self.leYCoord.editingFinished.connect(self.set_y_coord)
-        self.leThreshold.editingFinished.connect(self.set_threshold_by_input)
+        self.le_x_coord.editingFinished.connect(self.set_x_coord)
+        self.le_y_coord.editingFinished.connect(self.set_y_coord)
+        self.le_threshold.editingFinished.connect(self.set_threshold_by_input)
         
         self.threshold = 0.5
         self.path_to_file = ""
@@ -67,8 +67,8 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
 
     def set_path_to_file(self):
         options = QFileDialog.Options()
-        fileName, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "", "HDR Files (*.hdr)", options=options)
-        self.path_to_file = fileName
+        file_name, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "", "HDR Files (*.hdr)", options=options)
+        self.path_to_file = file_name
         
         self.open_file()
             
@@ -78,23 +78,23 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
     def open_file(self):
         if self.path_to_file != "":
             print("filename: ", self.path_to_file) 
-            self.lblPathToFile.setText("Path to file: \n" + self.path_to_file)
+            self.lbl_path_to_file.setText("Path to file: \n" + self.path_to_file)
  
             self.show_image()
         else:
-            self.lblPathToFile.setText("Path to file: \nNo file selected")
+            self.lbl_path_to_file.setText("Path to file: \nNo file selected")
             
     def set_x_coord(self):
-        if self.leXCoord.text() != "":
-            self.x_coord = int(self.leXCoord.text())
+        if self.le_x_coord.text() != "":
+            self.x_coord = int(self.le_x_coord.text())
         else: 
             self.x_coord = 0
             
         self.show_image()
         
     def set_y_coord(self):
-        if self.leYCoord.text() != "":     
-            self.y_coord = int(self.leYCoord.text())
+        if self.le_y_coord.text() != "":     
+            self.y_coord = int(self.le_y_coord.text())
         else:
             self.y_coord = 0
             
@@ -111,15 +111,15 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         return self.y_coord
             
     def set_threshold_by_slider(self):
-        self.threshold = self.sldThreshold.value() / 10000
-        self.leThreshold.setText(str(self.threshold))
+        self.threshold = self.sld_threshold.value() / 10000
+        self.le_threshold.setText(str(self.threshold))
         
         print("New threshold: ", self.threshold)
         
     def set_threshold_by_input(self):
-        self.threshold = float(self.leThreshold.text())
-        sldThresholdValue = int(self.threshold * 10000)
-        self.sldThreshold.setValue(sldThresholdValue)
+        self.threshold = float(self.le_threshold.text())
+        sld_threshold_value = int(self.threshold * 10000)
+        self.sld_threshold.setValue(sld_threshold_value)
         
         print("New threshold: ", self.threshold)
         
@@ -137,24 +137,16 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         img = self.get_image_from_hdr()
 
         height, width, _ = img.shape
-        bytesPerLine = 3 * width
-        qImg = QImage(img.data, width, height, bytesPerLine, QImage.Format_RGB888).rgbSwapped()
+        bytes_per_line = 3 * width
+        q_img = QImage(img.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
         
-        painter = QPainter(qImg)
+        painter = QPainter(q_img)
         painter.setPen(QPen(QColor(255, 0, 0), 10))
         painter.drawPoint(self.y_coord, self.x_coord) # X and Y are opposite order because it is what it is.
         painter.end()
         
-        self.lblImage.setPixmap(QPixmap.fromImage(qImg))
+        self.lbl_original_image.setPixmap(QPixmap.fromImage(q_img))
         
-        
-    ## NOTE ##
-    # To make this work, you need to install the spectral library and opencv-python librari in QGIS.
-    # Go to QGIS -> python consol:
-    #   import pip
-    #   pip.main(['install', 'spectral'])
-    #   pip.main(['install', 'opencv-python'])
-    # Restart QGIS
     def get_image_from_hdr(self):
         print("get_image_from_hdr")
         full_img = envi.open(self.path_to_file)
