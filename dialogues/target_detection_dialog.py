@@ -145,9 +145,8 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         painter.drawPoint(self.y_coord, self.x_coord) # X and Y are opposite order because it is what it is.
         painter.end()
         
-        self.lblImage.setPixmap(QPixmap.fromImage(qImg))
-        
-        
+        self.lblOriginalImage.setPixmap(QPixmap.fromImage(qImg))
+    
     ## NOTE ##
     # To make this work, you need to install the spectral library and opencv-python librari in QGIS.
     # Go to QGIS -> python consol:
@@ -157,9 +156,8 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
     # Restart QGIS
     def get_image_from_hdr(self):
         print("get_image_from_hdr")
-        full_img = envi.open(self.path_to_file)
-        img_array = full_img.load()
-        
+        self.full_img = envi.open(self.path_to_file)
+        img_array = self.full_img.load()
         
         R = 60
         G = 80
