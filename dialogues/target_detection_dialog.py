@@ -26,7 +26,12 @@ import os
 
 from PyQt5.QtWidgets import QFileDialog, QDialog
 import PyQt5.uic as uic
-from PyQt5.QtGui import QPicture, QPainter, QPen, QBrush, QColor, QPixmap
+from PyQt5.QtGui import QImage, QPainter, QPen, QBrush, QColor, QPixmap
+
+import cv2
+import spectral.io.envi as envi
+import spectral as spy
+import numpy as np
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -62,8 +67,7 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
 
     def set_path_to_file(self):
         options = QFileDialog.Options()
-        # fileName, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "", "HDR Files (*.hdr)", options=options)
-        fileName, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "", "All Files (*)", options=options)
+        fileName, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "", "HDR Files (*.hdr)", options=options)
         self.path_to_file = fileName
         
         self.open_file()
@@ -130,36 +134,44 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         
     def show_image(self):
         print("show_image")
-        # img = self.get_image_from_hdr()
+        img = self.get_image_from_hdr()
 
-        pic = QPixmap()
-        # pic.convertFromImage(self.path_to_file)
-        pic.load(self.path_to_file)
+        height, width, _ = img.shape
+        bytesPerLine = 3 * width
+        qImg = QImage(img.data, width, height, bytesPerLine, QImage.Format_RGB888).rgbSwapped()
         
-        painter = QPainter(pic)
+        painter = QPainter(qImg)
         painter.setPen(QPen(QColor(255, 0, 0), 10))
         painter.drawPoint(self.y_coord, self.x_coord) # X and Y are opposite order because it is what it is.
         painter.end()
         
-        self.lblImage.setPixmap(pic)
+        self.lblImage.setPixmap(QPixmap.fromImage(qImg))
         
-    # TODO: Get imports to work with QGIS env
-    # def get_image_from_hdr(self):
-    #     print("get_image_from_hdr")
-    #     full_img = envi.open(self.pathToFile)
-    #     img_array = full_img.load()
         
-    #     R = 60
-    #     G = 80
-    #     B = 90
+    ## NOTE ##
+    # To make this work, you need to install the spectral library and opencv-python librari in QGIS.
+    # Go to QGIS -> python consol:
+    #   import pip
+    #   pip.main(['install', 'spectral'])
+    #   pip.main(['install', 'opencv-python'])
+    # Restart QGIS
+    def get_image_from_hdr(self):
+        print("get_image_from_hdr")
+        full_img = envi.open(self.path_to_file)
+        img_array = full_img.load()
         
-    #     img_array = img_array[:,:,(R,G,B)]
-    #     img_array = img_array - img_array.min()
-    #     img_array = img_array / img_array.max()
-    #     img_array = img_array * 255 
-    #     img_array = img_array.astype(np.uint8)
         
-    #     np_img = np.array(img_array)
-    #     img = cv2.cvtColor(np_img, cv2.COLOR_BGR2RGB)
+        R = 60
+        G = 80
+        B = 90
         
-    #     return img
+        img_array = img_array[:,:,(R,G,B)]
+        img_array = img_array - img_array.min()
+        img_array = img_array / img_array.max()
+        img_array = img_array * 255 
+        img_array = img_array.astype(np.uint8)
+        
+        np_img = np.array(img_array)
+        img = cv2.cvtColor(np_img, cv2.COLOR_BGR2RGB)
+        
+        return img

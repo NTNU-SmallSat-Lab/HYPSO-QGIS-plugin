@@ -32,7 +32,6 @@ from .dialogues.hypso_1_dialog import Hypso1Dialog
 from .dialogues.target_detection_dialog import TargetDetectionDialog
 import os.path
 
-
 class Hypso1:
     """QGIS Plugin Implementation."""
 
