@@ -21,14 +21,15 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
-from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction
+from PyQt5.QtCore import QSettings, QTranslator, QCoreApplication
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QAction
 
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
-from .hypso_1_dialog import Hypso1Dialog
+from .dialogues.hypso_1_dialog import Hypso1Dialog
+from .dialogues.target_detection_dialog import TargetDetectionDialog
 import os.path
 
 
@@ -65,7 +66,9 @@ class Hypso1:
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
-        self.first_start = None
+        # self.first_start = None
+        self.hypso1_start = None
+        self.target_detection_start = None
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -169,13 +172,14 @@ class Hypso1:
         
         self.add_action(
             icon_path,
-            text=self.tr(u'New menu action'),
-            callback=self.run_new_method,
+            text=self.tr(u'Target Detection'),
+            callback=self.target_detection,
             parent=self.iface.mainWindow())
         
 
         # will be set False in run()
-        self.first_start = True
+        self.hypso1_start = True
+        self.target_detection_start = True
 
 
     def unload(self):
@@ -192,37 +196,35 @@ class Hypso1:
 
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        if self.first_start == True:
-            self.first_start = False
-            self.dlg = Hypso1Dialog()
+        if self.hypso1_start == True:
+            self.hypso1_start = False
+            self.dlg_hypso1 = Hypso1Dialog()
 
         # show the dialog
-        self.dlg.show()
+        self.dlg_hypso1.show()
         # Run the dialog event loop
-        result = self.dlg.exec_()
+        result = self.dlg_hypso1.exec_()
         # See if OK was pressed
         if result:
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             pass
 
-    def run_new_method(self):
+    def target_detection(self):
         """Run method that performs all the real work"""
 
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        if self.first_start == True:
-            self.first_start = False
-            self.dlg = Hypso1Dialog()
+        if self.target_detection_start == True:
+            self.target_detection_start = False
+            self.dlg_target_detection = TargetDetectionDialog()
 
         # show the dialog
-        self.dlg.show()
+        self.dlg_target_detection.show()
         # Run the dialog event loop
-        result = self.dlg.exec_()
+        result = self.dlg_target_detection.exec_()
         # See if OK was pressed
         if result:
-            self.d
-            
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
-            pass
+            print("when does this happen")
