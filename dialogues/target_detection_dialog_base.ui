@@ -359,14 +359,6 @@ after generating</string>
           <property name="scaledContents">
            <bool>true</bool>
           </property>
-         </spacer>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="lbl_coordinate_input">
-          <property name="text">
-           <string>Input coordinates for
-pixel of interest</string>
-          </property>
          </widget>
          <widget class="QLabel" name="lbl_original_image">
           <property name="geometry">

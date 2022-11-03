@@ -24,7 +24,7 @@
 
 import os
 
-from PyQt5 import uic
+import PyQt5.uic as uic
 from PyQt5 import QtWidgets
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
@@ -33,7 +33,6 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 
 class Hypso1Dialog(QtWidgets.QDialog, FORM_CLASS):
-    
     def __init__(self, parent=None):
         """Constructor."""
         super(Hypso1Dialog, self).__init__(parent)
@@ -49,5 +48,6 @@ class Hypso1Dialog(QtWidgets.QDialog, FORM_CLASS):
         qfd = QtWidgets.QFileDialog()
         # title = self.plugin.tr("Select a BIP file")
         filename = QtWidgets.QFileDialog.getOpenFileName(qfd, "Import BIP", "", "BIP data files (*.bip)")
-
-    
+        
+        
+        

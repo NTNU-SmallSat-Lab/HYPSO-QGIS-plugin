@@ -195,8 +195,7 @@ class Hypso1DataAnalysis:
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed
-        if result:
-            
+        if result:            
             if self.dlg.do_target_detection.isChecked():
                 # Run the TargetDetectionDialog
                 self.target_detection_dlg = TargetDetectionDialog()
