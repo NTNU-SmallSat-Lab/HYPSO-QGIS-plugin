@@ -53,8 +53,8 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         
         self.pb_open_file.clicked.connect(self.set_path_to_file)
         self.pb_set_coord.clicked.connect(self.set_coordinates)
-        self.pb_generate.clicked.connect(self.generate)
-        self.pb_save_to_folder.clicked.connect(self.save_to_folder)
+        self.pb_generate.clicked.connect(self.generate_result_images)
+        self.pb_save_as.clicked.connect(self.save_as)
         self.pb_exit.clicked.connect(self.close)
         
         self.sld_threshold.valueChanged.connect(self.set_threshold_by_slider)
@@ -67,6 +67,7 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         
         self.threshold = 0.9
         self.path_to_file = ""
+        self.path_to_save_folder = ""
         self.x = 0
         self.y = 0
         self.generated = False
@@ -158,7 +159,7 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
     def get_threshold(self):
         return self.threshold
     
-    def generate(self):
+    def generate_result_images(self):
         print(self.get_timestamp() + " Generating...")
         
         self.corr_raw = self.correlation_coefficients()
@@ -204,7 +205,7 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         
         painter = QPainter(q_img)
         painter.setPen(QPen(QColor(255, 0, 0), 10))
-        painter.drawPoint(self.y, self.x) # X and Y are opposite order because it is what it is.
+        painter.drawPoint(self.y, self.x) # X and Y are opposite order because of how envi processes the image. 
         painter.end()
         
         self.lbl_original_image.setPixmap(QPixmap.fromImage(q_img))
@@ -243,41 +244,12 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
     def correlation_coefficients(self):
         corr = np.ones((self.full_img.shape[0], self.full_img.shape[1]))
         
-        # Print progressbar
-        # self.printProgressBar(0, self.full_img.shape[0], prefix = 'Progress:', suffix = 'Complete', length = 50)
-        
         for i in range(self.full_img.shape[0]):
-            # self.printProgressBar(i + 1, self.full_img.shape[0], prefix = 'Progress:', suffix = 'Complete', length = 50)
-            
             for j in range(self.full_img.shape[1]):
                 pixel = self.full_img.read_pixel(i, j)
                 corr[i,j] = stats.pearsonr(pixel, self.full_img.read_pixel(self.x, self.y))[0]
 
         return corr
-    
-    # Print iterations progress. From https://stackoverflow.com/questions/3173320/text-progress-bar-in-terminal-with-block-characters
-    def printProgressBar (self, iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', print_end = "\r"):
-        """
-        Call in a loop to create terminal progress bar
-        @params:
-            iteration   - Required  : current iteration (Int)
-            total       - Required  : total iterations (Int)
-            prefix      - Optional  : prefix string (Str)
-            suffix      - Optional  : suffix string (Str)
-            decimals    - Optional  : positive number of decimals in percent complete (Int)
-            length      - Optional  : character length of bar (Int)
-            fill        - Optional  : bar fill character (Str)
-            printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
-        """
-        
-        percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-        filled_length = int(length * iteration // total)
-        bar = fill * filled_length + '-' * (length - filled_length)
-        print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = print_end)
-        # Print New Line on Complete
-        if iteration == total: 
-            print()
-
     
     def threshold_correlation_coefficients(self):
         corr_thresh = self.corr_raw.copy()
@@ -289,34 +261,47 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
     def get_timestamp(self):
         return time.strftime("%H:%M:%S", time.localtime())
     
-    def save_to_folder(self):
+    
+    def set_save_directory(self):
+        options = QFileDialog.Options()
+        folder_name = QFileDialog.getExistingDirectory(self, "QFileDialog.getExistingDirectory()", "", options=options)
+        self.path_to_save_folder = folder_name
+        
+        if folder_name:
+            print("Updated path to save folder: ", self.path_to_folder)
+    
+    def save_as(self):
+        options = QFileDialog.Options()
+        QFileDialog.getSaveFileName
+        folder_name = QFileDialog.getExistingDirectory(self, "QFileDialog.getExistingDirectory()", "", options=options)
+        self.path_to_save_folder = folder_name
+        
+        if self.path_to_save_folder == "":
+            self.path_to_save_folder = self.path_to_file
+        
         if self.path_to_file == "" or not self.generated:
             return
         
         if self.cb_corr_as_npy.isChecked():
             try:
-                # Save correlations coefficients as numpy array
                 np.save(self.path_to_file[:-4] + "_correlation_coefficients.npy", self.corr_raw)
             except Exception as e:
-                print(self.get_timestamp() + " Error when saving corr_coff as npy: " + str(e))
+                print(self.get_timestamp() + " Error when saving correlation coefficients as npy: " + str(e))
                 
         if self.cb_corr_as_png.isChecked():
             try:
-                # Save correlations coefficients as png
                 cv2.imwrite(self.path_to_file[:-4] + "_correlation_coefficients.png", self.corr_img)
             except Exception as e:
-                print(self.get_timestamp() + " Error when saving corr_coff as png: " + str(e))
+                print(self.get_timestamp() + " Error when saving corrrelatinon coefficients as png: " + str(e))
         
         if self.cb_thresholded_as_npy.isChecked():
             try: 
-                # Save thresholded correlations coefficients as numpy array
                 np.save(self.path_to_file[:-4] + "_thresholded_correlation_coefficients_" + str(self.threshold) + ".npy", self.corr_thresh_raw)
             except Exception as e:
-                print(self.get_timestamp() + " Error when saving thresh_corr_coff as npy: " + str(e))
+                print(self.get_timestamp() + " Error when saving thresholded corrrelation coefficients as npy: " + str(e))
                 
         if self.cb_thresholded_as_png.isChecked():
             try:
-                # Save thresholded correlations coefficients as png
                 cv2.imwrite(self.path_to_file[:-4] + "_thresholded_correlation_coefficients_" + str(self.threshold) + ".png", self.corr_thresh_img)
             except Exception as e:
-                print(self.get_timestamp() + " Error when saving thresh_corr_coff as png: " + str(e))
+                print(self.get_timestamp() + " Error when saving thresholded corrrelation coefficients as png: " + str(e))

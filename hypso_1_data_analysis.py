@@ -186,7 +186,7 @@ class Hypso1DataAnalysis:
 
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        if self.first_start == True:
+        if self.first_start:
             self.first_start = False
             self.dlg = Hypso1DataAnalysisDialog()
 
@@ -197,7 +197,6 @@ class Hypso1DataAnalysis:
         # See if OK was pressed
         if result:            
             if self.dlg.do_target_detection.isChecked():
-                # Run the TargetDetectionDialog
                 self.target_detection_dlg = TargetDetectionDialog()
                 self.target_detection_dlg.show()
                 result = self.target_detection_dlg.exec_()
@@ -208,7 +207,6 @@ class Hypso1DataAnalysis:
                 # pass
             
             if self.dlg.do_atmospheric_correction.isChecked():
-                # Run the AtmosphericCorrectionDialog
                 self.atmospheric_correction_dlg = Hypso1Dialog()
                 self.atmospheric_correction_dlg.show()
                 result = self.atmospheric_correction_dlg.exec_()
