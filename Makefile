@@ -1,12 +1,12 @@
 #/***************************************************************************
-# Hypso1
+# Hypso1DataAnalysis
 #
-# This is a plugin for data analysis for HYPSO-1
+# This plugin allows for multiple types of analysis for Hypso-1 data
 #							 -------------------
-#		begin				: 2022-10-05
+#		begin				: 2022-11-03
 #		git sha				: $Format:%H$
-#		copyright			: (C) 2022 by Edmond Baloku
-#		email				: edmondbv@hotmail.com
+#		copyright			: (C) 2022 by Markus Haldorsen & Edmond Baloku
+#		email				: markushaldorsen@gmail.com and edmondbv@hotmail.com
 # ***************************************************************************/
 #
 #/***************************************************************************
@@ -38,15 +38,15 @@ LOCALES =
 # translation
 SOURCES = \
 	__init__.py \
-	hypso_1.py hypso_1_dialog.py
+	hypso_1_data_analysis.py hypso_1_data_analysis_dialog.py
 
-PLUGINNAME = hypso_1
+PLUGINNAME = hypso_1_data_analysis
 
 PY_FILES = \
 	__init__.py \
-	hypso_1.py hypso_1_dialog.py
+	hypso_1_data_analysis.py hypso_1_data_analysis_dialog.py
 
-UI_FILES = hypso_1_dialog_base.ui
+UI_FILES = hypso_1_data_analysis_dialog_base.ui
 
 EXTRAS = metadata.txt icon.png
 
@@ -65,7 +65,7 @@ PEP8EXCLUDE=pydev,resources.py,conf.py,third_party,ui
 #	* Windows:
 #	  AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins'
 
-QGISDIR=/Users/edmondbaloku/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins
+QGISDIR=/Users/markushaldorsen/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins
 
 #################################################
 # Normally you would not need to edit below here
