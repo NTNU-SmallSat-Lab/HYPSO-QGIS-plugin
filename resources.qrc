@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/plugins/hypso_1" >
+    <qresource prefix="/plugins/hypso_1_data_analysis" >
         <file>icon.png</file>
     </qresource>
 </RCC>

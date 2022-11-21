@@ -3,14 +3,14 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=Hypso 1
+name=Hypso-1 Data Analysis
 qgisMinimumVersion=3.0
-description=This is a plugin for data analysis for HYPSO-1
+description=This plugin allows for multiple types of analysis for Hypso-1 data
 version=0.1
-author=Edmond Baloku
-email=edmondbv@hotmail.com
+author=Markus Haldorsen & Edmond Baloku
+email=markushaldorsen@gmail.com and edmondbv@hotmail.com
 
-about=This is a plugin to analyse data
+about=This plugin can analyse Hypso-1 data in form of target detection and atmospheric correction.
 
 tracker=http://bugs
 repository=http://repo
