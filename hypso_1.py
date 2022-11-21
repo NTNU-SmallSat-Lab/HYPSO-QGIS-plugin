@@ -28,7 +28,7 @@ from PyQt5.QtWidgets import QAction
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
-from .dialogues.hypso_1_dialog import Hypso1Dialog
+from .dialogues.atmospheric_correction_dialog import AtmosphericCorrection
 from .dialogues.target_detection_dialog import TargetDetectionDialog
 import os.path
 
@@ -66,7 +66,7 @@ class Hypso1:
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
         # self.first_start = None
-        self.hypso1_start = None
+        self.atmospheric_correction_start = None
         self.target_detection_start = None
 
     # noinspection PyMethodMayBeStatic
@@ -166,7 +166,7 @@ class Hypso1:
         self.add_action(
             icon_path,
             text=self.tr(u'Atmospheric correction'),
-            callback=self.run_analyse_data,
+            callback=self.atmospheric_correction,
             parent=self.iface.mainWindow())
         
         self.add_action(
@@ -177,7 +177,7 @@ class Hypso1:
         
 
         # will be set False in run()
-        self.hypso1_start = True
+        self.atmospheric_correction_start = True
         self.target_detection_start = True
 
 
@@ -190,19 +190,19 @@ class Hypso1:
             self.iface.removeToolBarIcon(action)
 
 
-    def run_analyse_data(self):
+    def atmospheric_correction(self):
         """Run method that performs all the real work"""
 
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        if self.hypso1_start == True:
-            self.hypso1_start = False
-            self.dlg_hypso1 = Hypso1Dialog()
+        if self.atmospheric_correction_start == True:
+            self.atmospheric_correction_start = False
+            self.dlg_atmmospheric_correction = AtmosphericCorrection()
 
         # show the dialog
-        self.dlg_hypso1.show()
+        self.dlg_atmmospheric_correction.show()
         # Run the dialog event loop
-        result = self.dlg_hypso1.exec_()
+        result = self.dlg_atmmospheric_correction.exec_()
         # See if OK was pressed
         if result:
             # Do something useful here - delete the line containing pass and
