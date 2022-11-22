@@ -20,7 +20,8 @@ To make this work, you need to install the spectral library and opencv-python li
 4. Install the plugin.
 5. Restart QGIS.
 6. If you could not find the plugin in the list, clone this repository to your computer.
-7. Open the default installation folder [Library/Application\ Support/QGIS/QGIS3/profiles/default/python/plugins].
+7. Open the default installation folder:
+Library/Application\ Support/QGIS/QGIS3/profiles/default/python/plugins.
 If you installed QGIS in a different location, open the corresponding folder.
 8. Copy the folder from the cloned repository to the "python/plugins" folder.
 9. Restart QGIS.
