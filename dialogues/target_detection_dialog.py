@@ -26,11 +26,10 @@ import os
 
 from PyQt5.QtWidgets import QFileDialog, QDialog
 import PyQt5.uic as uic
-from PyQt5.QtGui import QImage, QPainter, QPen, QBrush, QColor, QPixmap
+from PyQt5.QtGui import QImage, QPainter, QPen, QColor, QPixmap
 
 import cv2
 import spectral.io.envi as envi
-import spectral as spy
 import numpy as np
 import scipy.stats as stats
 import time
@@ -159,35 +158,6 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
     def get_threshold(self):
         return self.threshold
     
-    def generate_result_images(self):
-        print(self.get_timestamp() + " Generating...")
-        
-        self.corr_raw = self.correlation_coefficients()
-        self.corr_img = self.raw_to_img(self.corr_raw, cv2.COLORMAP_JET)
-     
-        self.corr_thresh_raw = self.threshold_correlation_coefficients()
-        self.corr_thresh_img = self.raw_to_img(self.corr_thresh_raw, cv2.COLORMAP_BONE)
-        
-        height, width, _ = self.corr_img.shape
-        bytes_per_line = 3 * width
-        self.corr_q_img = QImage(self.corr_img.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
-        self.corr_thresh_q_img = QImage(self.corr_thresh_img.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
-        
-        self.update_result_image()
-        self.generated = True
-    
-    def raw_to_img(self, raw, colormap):
-        img = cv2.normalize(raw, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8UC1)
-        img = cv2.applyColorMap(img, colormap)
-        
-        return img
-        
-    def update_result_image(self):
-        if self.rb_thresholded.isChecked():
-            self.lbl_result_image.setPixmap(QPixmap.fromImage(self.corr_thresh_q_img))
-        else:
-            self.lbl_result_image.setPixmap(QPixmap.fromImage(self.corr_q_img))
-
     def show_original_image(self):
         if self.path_to_file == "":
             return
@@ -209,14 +179,6 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         painter.end()
         
         self.lbl_original_image.setPixmap(QPixmap.fromImage(q_img))
-        
-    def update_threshold_image(self):
-        self.corr_thresh_raw = self.threshold_correlation_coefficients()
-        self.corr_thresh_img = self.raw_to_img(self.corr_thresh_raw, cv2.COLORMAP_BONE)
-        
-        height, width, _ = self.corr_thresh_img.shape
-        bytes_per_line = 3 * width
-        self.corr_thresh_q_img = QImage(self.corr_thresh_img.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
         
     
     def get_image_from_hdr(self):
@@ -240,6 +202,31 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         img = cv2.cvtColor(np_img, cv2.COLOR_BGR2RGB)
         
         return img
+    
+    def generate_result_images(self):
+        print(self.get_timestamp() + " Generating...")
+        
+        self.corr_raw = self.correlation_coefficients()
+        self.corr_img = self.raw_to_img(self.corr_raw, cv2.COLORMAP_JET)
+     
+        self.corr_thresh_raw = self.threshold_correlation_coefficients()
+        self.corr_thresh_img = self.raw_to_img(self.corr_thresh_raw, cv2.COLORMAP_BONE)
+        
+        height, width, _ = self.corr_img.shape
+        bytes_per_line = 3 * width
+        self.corr_q_img = QImage(self.corr_img.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
+        self.corr_thresh_q_img = QImage(self.corr_thresh_img.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
+        
+        self.update_result_image()
+        self.generated = True
+        
+    def update_threshold_image(self):
+        self.corr_thresh_raw = self.threshold_correlation_coefficients()
+        self.corr_thresh_img = self.raw_to_img(self.corr_thresh_raw, cv2.COLORMAP_BONE)
+        
+        height, width, _ = self.corr_thresh_img.shape
+        bytes_per_line = 3 * width
+        self.corr_thresh_q_img = QImage(self.corr_thresh_img.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
 
     def correlation_coefficients(self):
         corr = np.ones((self.full_img.shape[0], self.full_img.shape[1]))
@@ -258,9 +245,20 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         
         return corr_thresh
     
+    def raw_to_img(self, raw, colormap):
+        img = cv2.normalize(raw, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8UC1)
+        img = cv2.applyColorMap(img, colormap)
+        
+        return img
+    
+    def update_result_image(self):
+        if self.rb_thresholded.isChecked():
+            self.lbl_result_image.setPixmap(QPixmap.fromImage(self.corr_thresh_q_img))
+        else:
+            self.lbl_result_image.setPixmap(QPixmap.fromImage(self.corr_q_img))
+        
     def get_timestamp(self):
         return time.strftime("%H:%M:%S", time.localtime())
-    
     
     def set_save_directory(self):
         options = QFileDialog.Options()
@@ -268,13 +266,10 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         self.path_to_save_folder = folder_name
         
         if folder_name:
-            print("Updated path to save folder: ", self.path_to_folder)
+            print("Updated path to save folder: ", self.path_to_save_folder)
     
     def save_as(self):
-        options = QFileDialog.Options()
-        QFileDialog.getSaveFileName
-        folder_name = QFileDialog.getExistingDirectory(self, "QFileDialog.getExistingDirectory()", "", options=options)
-        self.path_to_save_folder = folder_name
+        self.set_save_directory()
         
         if self.path_to_save_folder == "":
             self.path_to_save_folder = self.path_to_file
@@ -282,26 +277,28 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         if self.path_to_file == "" or not self.generated:
             return
         
+        name = self.path_to_file[self.path_to_file.rfind("/")+1:-4]
+        
         if self.cb_corr_as_npy.isChecked():
             try:
-                np.save(self.path_to_file[:-4] + "_correlation_coefficients.npy", self.corr_raw)
+                np.save(self.path_to_save_folder + "/" + name + "correlation_coefficients.npy", self.corr_raw)
             except Exception as e:
                 print(self.get_timestamp() + " Error when saving correlation coefficients as npy: " + str(e))
                 
         if self.cb_corr_as_png.isChecked():
             try:
-                cv2.imwrite(self.path_to_file[:-4] + "_correlation_coefficients.png", self.corr_img)
+                cv2.imwrite(self.path_to_save_folder + "/" + name + "correlation_coefficients.png", self.corr_img)
             except Exception as e:
                 print(self.get_timestamp() + " Error when saving corrrelatinon coefficients as png: " + str(e))
         
         if self.cb_thresholded_as_npy.isChecked():
             try: 
-                np.save(self.path_to_file[:-4] + "_thresholded_correlation_coefficients_" + str(self.threshold) + ".npy", self.corr_thresh_raw)
+                np.save(self.path_to_save_folder + "/" + name + "thresholded_correlation_coefficients_" + str(self.threshold) + ".npy", self.corr_thresh_raw)
             except Exception as e:
                 print(self.get_timestamp() + " Error when saving thresholded corrrelation coefficients as npy: " + str(e))
                 
         if self.cb_thresholded_as_png.isChecked():
             try:
-                cv2.imwrite(self.path_to_file[:-4] + "_thresholded_correlation_coefficients_" + str(self.threshold) + ".png", self.corr_thresh_img)
+                cv2.imwrite(self.path_to_save_folder + "/" + name + "thresholded_correlation_coefficients_" + str(self.threshold) + ".png", self.corr_thresh_img)
             except Exception as e:
                 print(self.get_timestamp() + " Error when saving thresholded corrrelation coefficients as png: " + str(e))
