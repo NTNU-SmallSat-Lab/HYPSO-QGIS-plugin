@@ -190,28 +190,13 @@ class Hypso1DataAnalysis:
             self.first_start = False
             self.dlg = Hypso1DataAnalysisDialog()
 
-        # show the dialog
         self.dlg.show()
-        # Run the dialog event loop
         result = self.dlg.exec_()
-        # See if OK was pressed
         if result:            
             if self.dlg.do_target_detection.isChecked():
                 self.target_detection_dlg = TargetDetectionDialog()
                 self.target_detection_dlg.show()
-                result = self.target_detection_dlg.exec_()
-                if result:
-                    # Do something useful here - delete the line containing pass and
-                    # substitute with your code.
-                    pass
-                # pass
             
             if self.dlg.do_atmospheric_correction.isChecked():
                 self.atmospheric_correction_dlg = Hypso1Dialog()
                 self.atmospheric_correction_dlg.show()
-                result = self.atmospheric_correction_dlg.exec_()
-                if result:
-                    # Do something useful here - delete the line containing pass and
-                    # substitute with your code.
-                    pass
-                # pass
