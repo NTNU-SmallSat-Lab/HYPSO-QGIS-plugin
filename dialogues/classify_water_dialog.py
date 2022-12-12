@@ -31,7 +31,7 @@ import matplotlib.pyplot as plt
 
 from PyQt5.QtWidgets import QFileDialog, QDialog
 import PyQt5.uic as uic
-from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtGui import QImage, QPixmap, QPainter, QPen, QColor
 
 from ..classify_water.atmospheric_correction import atmospheric_correction
 from ..classify_water.cube_calibration import cube_calibration
@@ -57,10 +57,11 @@ class ClassifyWater(QDialog, FORM_CLASS):
         self.open_file_button.clicked.connect(self.set_path_to_file)
         self.calibrate_img_button.clicked.connect(self.perform_cube_calibration)
         self.set_rgb_button.clicked.connect(self.set_rgb)
-        self.save_img_button.clicked.connect(self.save_img_dialog)
-        self.save_array_button.clicked.connect(self.save_array_dialog)
+        self.set_pixels_button.clicked.connect(self.set_pixels)
         self.atmospheric_correction_button.clicked.connect(self.perform_atmospheric_correction)
         self.classify_water_button.clicked.connect(self.classify_water)
+        self.save_img_button.clicked.connect(self.save_img_dialog)
+        self.save_array_button.clicked.connect(self.save_array_dialog)
 
         self.input_exp.editingFinished.connect(self.set_exp)
 
@@ -70,6 +71,10 @@ class ClassifyWater(QDialog, FORM_CLASS):
         self.exp = 0.035
         self.original_rgb = (60, 80, 90)
         self.calibrated_rgb = (70, 50, 35)
+
+        self.water_pix_pos_1 = (0, 0)
+        self.water_pix_pos_2 = (0, 0)
+        self.water_pix_pos_3 = (0, 0)
 
         self.new_img_status  = ""
         
@@ -81,7 +86,7 @@ class ClassifyWater(QDialog, FORM_CLASS):
             self.open_file()
 
         except Exception as err:
-            print("Error: " + str(err))
+            print("Error when setting path to file: " + str(err))
 
 
     def save_img_dialog(self):
@@ -98,7 +103,7 @@ class ClassifyWater(QDialog, FORM_CLASS):
             self.save_img()
 
         except Exception as err:
-            print("Error: " + str(err))
+            print("Error in save image dialog: " + str(err))
 
 
     def save_array_dialog(self):
@@ -115,7 +120,7 @@ class ClassifyWater(QDialog, FORM_CLASS):
             self.save_array(file_type)
 
         except Exception as err:
-            print("Error: " + str(err))
+            print("Error in saving array dialog: " + str(err))
 
 
     def set_exp(self):
@@ -132,6 +137,16 @@ class ClassifyWater(QDialog, FORM_CLASS):
             elif self.calibrated_rgb_radiobutton.isChecked() or self.calibrate_img_button.clicked():
                 self.calibrated_rgb = tuple(map(int, self.input_rgb.text().split(",")))
                 self.calibrate_img()
+    
+    def set_pixels(self):
+        if self.input_pixel_1.text() != "":
+            self.water_pix_pos_1 = tuple(map(int, self.input_pixel_1.text().split(",")))
+        if self.input_pixel_2.text() != "":
+            self.water_pix_pos_2 = tuple(map(int, self.input_pixel_2.text().split(",")))
+        if self.input_pixel_3.text() != "":
+            self.water_pix_pos_3 = tuple(map(int, self.input_pixel_3.text().split(",")))
+        
+        self.perform_cube_calibration()
 
 
     def open_file(self):
@@ -154,13 +169,28 @@ class ClassifyWater(QDialog, FORM_CLASS):
             return img, full_img_array, envi_img
         
         except Exception as err:
-            print("Error: " + str(err))
+            print("Error when getting image from hdr: " + str(err))
+    
+    def paint_pixels(self, q_img):
+        painter = QPainter(q_img)
+        painter.setPen(QPen(QColor(255, 0, 0), 10))
+        painter.drawPoint(self.water_pix_pos_1[0], self.water_pix_pos_1[1]) 
+
+        painter.setPen(QPen(QColor(0, 255, 0), 10))
+        painter.drawPoint(self.water_pix_pos_2[0], self.water_pix_pos_2[1]) 
+        
+        painter.setPen(QPen(QColor(0, 0, 255), 10))
+        painter.drawPoint(self.water_pix_pos_3[0], self.water_pix_pos_3[1]) 
+        painter.end()
 
 
-    def show_img(self, img, label):
+    def show_img(self, img, label, paint=False):
         height, width, _ = img.shape
         bytes_per_line = 3 * width
         q_img = QImage(img.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
+
+        if paint:
+            self.paint_pixels(q_img)
 
         label.setPixmap(QPixmap.fromImage(q_img))
 
@@ -203,17 +233,17 @@ class ClassifyWater(QDialog, FORM_CLASS):
 
             self.calibrated_img, self.calibrated_img_array, self.calibrated_envi_img = self.get_img_from_hdr(calibrated_hdr_path, rgb=self.calibrated_rgb)
             self.calibrated_img = self.tune_overexposed_img(self.cube_scaled[:,::-1,:], cube_calibrated[:,::-1,:], wl=self.calibrated_wl)
-            self.show_img(self.calibrated_img, self.label_new_img)
+            self.show_img(self.calibrated_img, self.label_new_img, paint=True)
 
             self.new_img_status  = "calibrated"
 
         except Exception as err:
-            print("Error: " + str(err))
+            print("Error when performing cube calibration: " + str(err))
 
     
     def perform_atmospheric_correction(self):
         try:    
-            self.cube_atmos_corrected = atmospheric_correction(self.calibrated_envi_img ,self.calibrated_img_array )
+            self.cube_atmos_corrected = atmospheric_correction(self.calibrated_envi_img ,self.calibrated_img_array, self.water_pix_pos_1, self.water_pix_pos_2, self.water_pix_pos_3)
 
             self.atmos_corrected_img =  self.tune_overexposed_img(self.cube_scaled[:,::-1,:], self.cube_atmos_corrected[:,::-1,:], wl=self.calibrated_wl)
             self.show_img(self.atmos_corrected_img, self.label_new_img)
@@ -224,7 +254,7 @@ class ClassifyWater(QDialog, FORM_CLASS):
             self.new_img_status = "atmospheric_corrected"
         
         except Exception as err:
-            print("Error: " + str(err))
+            print("Error when performing atmospheric correction: " + str(err))
 
     def tune_overexposed_img(self, cube, cube_calibrated, R_w=630, G_w=540, B_w=480, bandpass=10, wl=[]):
         ''' Assumes input cube has been flipped and scaled if necessary, and
@@ -318,7 +348,10 @@ class ClassifyWater(QDialog, FORM_CLASS):
 
     def find_closest_wavelength(self, wl, target_wl):
         closest_wl = wl[min(range(len(wl)), key = lambda i: abs(wl[i] - target_wl))]
-        wl_list = wl.tolist()
+        
+        wl_list = wl
+        if type(wl)!= list:
+            wl_list = wl.tolist()
         index = wl_list.index(closest_wl)
 
         return closest_wl, index
@@ -359,7 +392,7 @@ class ClassifyWater(QDialog, FORM_CLASS):
             self.new_img_status  = "classified"
 
         except Exception as err:
-            print("Error:", str(err))
+            print("Error when classifying water:", str(err))
     
 
     def create_water_img(self, water_img_array):

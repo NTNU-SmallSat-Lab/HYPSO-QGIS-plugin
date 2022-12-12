@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>957</width>
-    <height>703</height>
+    <width>955</width>
+    <height>607</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <x>233</x>
      <y>30</y>
      <width>341</width>
-     <height>621</height>
+     <height>511</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -103,7 +103,7 @@
      <x>583</x>
      <y>30</y>
      <width>341</width>
-     <height>621</height>
+     <height>511</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -187,7 +187,7 @@
      <x>10</x>
      <y>30</y>
      <width>211</width>
-     <height>619</height>
+     <height>515</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -209,18 +209,24 @@
      </layout>
     </item>
     <item>
-     <widget class="QLabel" name="label_exp_description">
-      <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exposure time&lt;br/&gt;Default is set to 0.035&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
       </property>
-     </widget>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QLabel" name="label_exp">
         <property name="text">
-         <string>Exposure time</string>
+         <string>Set exposure time</string>
         </property>
        </widget>
       </item>
@@ -243,18 +249,11 @@
      </layout>
     </item>
     <item>
-     <widget class="QLabel" name="label_exp_description_2">
-      <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;RGB colors for image. &lt;br/&gt;Default is set to 60, 80,90&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-     </widget>
-    </item>
-    <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
        <widget class="QLabel" name="label_rgb">
         <property name="text">
-         <string>R,G,B</string>
+         <string>set RGB colours</string>
         </property>
        </widget>
       </item>
@@ -308,6 +307,19 @@
      </layout>
     </item>
     <item>
+     <spacer name="verticalSpacer_2">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
      <layout class="QHBoxLayout" name="horizontalLayout_6">
       <item>
        <widget class="QPushButton" name="calibrate_img_button">
@@ -325,6 +337,19 @@
      </layout>
     </item>
     <item>
+     <spacer name="verticalSpacer_4">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
      <widget class="QLabel" name="label_exp_description_3">
       <property name="text">
        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;Set three pixels known to be water &lt;br/&gt;before atmospheric correction&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -338,7 +363,7 @@
         <item>
          <widget class="QLabel" name="label_pixel_2">
           <property name="text">
-           <string>Pixel 2</string>
+           <string>Pixel 2 (green)</string>
           </property>
          </widget>
         </item>
@@ -360,7 +385,7 @@
            <string/>
           </property>
           <property name="placeholderText">
-           <string>300,400</string>
+           <string>607,600</string>
           </property>
          </widget>
         </item>
@@ -371,7 +396,7 @@
         <item>
          <widget class="QLabel" name="label_pixel_3">
           <property name="text">
-           <string>Pixel 3</string>
+           <string>Pixel 3 (blue)</string>
           </property>
          </widget>
         </item>
@@ -393,7 +418,7 @@
            <string/>
           </property>
           <property name="placeholderText">
-           <string>500,600</string>
+           <string>20,400</string>
           </property>
          </widget>
         </item>
@@ -404,7 +429,7 @@
         <item>
          <widget class="QLabel" name="label_pixel_1">
           <property name="text">
-           <string>Pixel 1</string>
+           <string>Pixel 1 (red)</string>
           </property>
          </widget>
         </item>
@@ -426,7 +451,7 @@
            <string/>
           </property>
           <property name="placeholderText">
-           <string>100,200</string>
+           <string>300,780</string>
           </property>
          </widget>
         </item>
@@ -437,7 +462,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_10">
       <item>
-       <widget class="QPushButton" name="set_pixel_button_2">
+       <widget class="QPushButton" name="set_pixels_button">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -469,6 +494,19 @@
      </layout>
     </item>
     <item>
+     <spacer name="verticalSpacer_3">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="1" rowspan="2">
        <widget class="QPushButton" name="classify_water_button">
@@ -498,8 +536,8 @@
   <widget class="QPushButton" name="save_img_button">
    <property name="geometry">
     <rect>
-     <x>750</x>
-     <y>660</y>
+     <x>743</x>
+     <y>560</y>
      <width>97</width>
      <height>32</height>
     </rect>
@@ -511,8 +549,8 @@
   <widget class="QPushButton" name="save_array_button">
    <property name="geometry">
     <rect>
-     <x>637</x>
-     <y>660</y>
+     <x>630</x>
+     <y>560</y>
      <width>97</width>
      <height>32</height>
     </rect>
