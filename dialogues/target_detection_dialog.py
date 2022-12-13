@@ -79,9 +79,12 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         self.generated = False
         self.spectral_signature = np.array
         self.show_dot = True
+        self.full_img_loaded = False
         
         self.pb_open_poi.setVisible(False)
         self.lbl_path_to_poi.setVisible(False)
+        
+        self.select_td_method.addItems(["Pearson's R", "Spearman's Rho"])
 
     def set_path_to_img(self):
         options = QFileDialog.Options()
@@ -152,25 +155,26 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
             self.show_dot = True
             
     def set_x(self):
-        if self.le_x.text() != "":
+        if self.le_x.text() != "" and self.full_img_loaded:
             try: 
                 self.x = int(self.le_x.text())
                 print(self.get_timestamp() + " Setting x coordinate to: " + self.le_x.text())
+                
+                self.update_pixel_of_interest()
             except Exception as e:
                 print(self.get_timestamp() + " Error: " + str(e))
                 
                 return
         else: 
             self.x = 0
-            
-        # self.show_original_image()
-        self.update_pixel_of_interest()
         
     def set_y(self):
-        if self.le_y.text() != "":     
+        if self.le_y.text() != "" and self.full_img_loaded:     
             try:
                 print(self.get_timestamp() + " Setting y coordinate to: " + self.le_y.text())
                 self.y = int(self.le_y.text())
+                
+                self.update_pixel_of_interest()
             except Exception as e:
                 print(self.get_timestamp() + " Error: " + str(e))
                 
@@ -178,8 +182,6 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         else:
             self.y = 0
             
-        # self.show_original_image()
-        self.update_pixel_of_interest()
         
     def set_coordinates(self):
         self.set_x()
@@ -255,6 +257,7 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
     def get_image_from_hdr(self):
         try:
             self.full_img = envi.open(self.path_to_img)
+            self.full_img_loaded = True
         except Exception as e:
             print(self.get_timestamp() + " Error: " + str(e))
                         
@@ -300,12 +303,31 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         self.corr_thresh_q_img = QImage(self.corr_thresh_img.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
 
     def correlation_coefficients(self, poi):
+        print(self.select_td_method.currentText())
+        if self.select_td_method.currentText() == "Pearson's R":
+            return self.pearsons_r_coefficients(poi)
+        elif self.select_td_method.currentText() == "Spearman's Rho":
+            return self.spearman_rho_coefficients(poi)
+        
+        return None
+
+    def pearsons_r_coefficients(self, poi):
         corr = np.ones((self.full_img.shape[0], self.full_img.shape[1]))
         
         for i in range(self.full_img.shape[0]):
             for j in range(self.full_img.shape[1]):
                 pixel = self.full_img.read_pixel(i, j)
                 corr[i,j] = stats.pearsonr(pixel, poi)[0]
+                
+        return corr
+    
+    def spearman_rho_coefficients(self, poi):
+        corr = np.ones((self.full_img.shape[0], self.full_img.shape[1]))
+        
+        for i in range(self.full_img.shape[0]):
+            for j in range(self.full_img.shape[1]):
+                pixel = self.full_img.read_pixel(i, j)
+                corr[i,j] = stats.spearmanr(pixel, poi)[0]
                 
         return corr
     
