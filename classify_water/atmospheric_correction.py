@@ -3,6 +3,10 @@ import os
 import scipy.stats as stats
 
 def atmospheric_correction(calibrated_envi_img, calibrated_np_array, water_pixel_pos_1, water_pixel_pos_2, water_pixel_pos_3):
+    '''
+    This method is based on the Empricial Line Fits described by Micheal T. Eismann in the book Hyperspectral Remote Sesing
+    '''
+
     avg_intercept, avg_slope = find_correlation(calibrated_envi_img, water_pixel_pos_1, water_pixel_pos_2, water_pixel_pos_3)
 
     corrected_np_array = np.zeros((calibrated_np_array.shape[0], calibrated_np_array.shape[1], calibrated_np_array.shape[2]))
