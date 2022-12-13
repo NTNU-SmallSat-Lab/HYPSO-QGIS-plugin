@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>187</width>
-    <height>121</height>
+    <width>248</width>
+    <height>156</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,6 +29,13 @@
     </widget>
    </item>
    <item row="2" column="0">
+    <widget class="QRadioButton" name="do_reduce_bip_to_mask">
+     <property name="text">
+      <string>Reduce Bip to mask</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
     <widget class="QDialogButtonBox" name="button_box">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>

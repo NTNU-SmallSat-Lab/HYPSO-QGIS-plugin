@@ -31,6 +31,7 @@ from .resources import *
 from .hypso_1_data_analysis_dialog import Hypso1DataAnalysisDialog
 from .dialogues.hypso_1_dialog import Hypso1Dialog
 from .dialogues.target_detection_dialog import TargetDetectionDialog
+from .dialogues.reduce_bip_to_mask import ReduceBipToMaskDialog
 import os.path
 
 
@@ -200,3 +201,7 @@ class Hypso1DataAnalysis:
             if self.dlg.do_atmospheric_correction.isChecked():
                 self.atmospheric_correction_dlg = Hypso1Dialog()
                 self.atmospheric_correction_dlg.show()
+                
+            if self.dlg.do_reduce_bip_to_mask.isChecked():
+                self.reduce_bip_to_mask_dlg = ReduceBipToMaskDialog()
+                self.reduce_bip_to_mask_dlg.show()
