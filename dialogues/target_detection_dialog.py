@@ -29,10 +29,13 @@ import PyQt5.uic as uic
 from PyQt5.QtGui import QImage, QPainter, QPen, QColor, QPixmap
 
 import cv2
+from matplotlib.backend_bases import FigureCanvasBase
+from matplotlib.figure import Figure, SubplotParams
 import spectral.io.envi as envi
 import numpy as np
 import scipy.stats as stats
 import time
+import matplotlib.pyplot as plt
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -50,7 +53,8 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
         
-        self.pb_open_file.clicked.connect(self.set_path_to_file)
+        self.pb_open_file.clicked.connect(self.set_path_to_img)
+        self.pb_open_poi.clicked.connect(self.set_path_to_poi)
         self.pb_set_coord.clicked.connect(self.set_coordinates)
         self.pb_generate.clicked.connect(self.generate_result_images)
         self.pb_save_as.clicked.connect(self.save_as)
@@ -64,32 +68,88 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         
         self.rb_thresholded.toggled.connect(self.update_result_image)
         
+        self.cb_external_poi.toggled.connect(self.set_external)
+        
         self.threshold = 0.9
-        self.path_to_file = ""
+        self.path_to_img = ""
+        self.path_to_poi = ""
         self.path_to_save_folder = ""
         self.x = 0
         self.y = 0
         self.generated = False
+        self.spectral_signature = np.array
+        self.show_dot = True
+        
+        self.pb_open_poi.setVisible(False)
+        self.lbl_path_to_poi.setVisible(False)
 
-    def set_path_to_file(self):
+    def set_path_to_img(self):
         options = QFileDialog.Options()
         file_name, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "", "HDR Files (*.hdr)", options=options)
-        self.path_to_file = file_name
+        self.path_to_img = file_name
         
         if file_name:
-            self.open_file()
+            self.open_img()
             
-    def get_path_to_file(self):
-        return self.path_to_file
+    def set_path_to_poi(self):
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "", "NPY Files (*.npy)", options=options)
+        self.path_to_poi = file_name
+        if file_name:
+            self.open_poi()
+            
+    def get_path_to_img(self):
+        return self.path_to_img
     
-    def open_file(self):
-        if self.path_to_file != "":
-            print(self.get_timestamp() + " Opening file: " + self.path_to_file)
-            self.lbl_path_to_file.setText("Path to file: \n" + self.path_to_file)
+    def get_path_to_poi(self):
+        return self.path_to_poi
+    
+    def open_img(self):
+        if self.path_to_img != "":
+            print(self.get_timestamp() + " Opening file: " + self.path_to_img)
+            self.lbl_path_to_img.setText("Filename: \n" + self.path_to_img.split("/").pop())
  
             self.show_original_image()
         else:
-            self.lbl_path_to_file.setText("Path to file: \nNo file selected")
+            self.lbl_path_to_img.setText("Filename: \nNo file selected")
+            
+    def open_poi(self):
+        if self.path_to_poi != "":
+            print(self.get_timestamp() + " Opening file: " + self.path_to_poi)
+            self.lbl_path_to_poi.setText("Filename: \n" + self.path_to_poi.split("/").pop())
+            
+            self.spectral_signature = np.load(self.path_to_poi)
+            
+        else:
+            self.lbl_path_to_poi.setText("Filename: \nNo file selected")
+            
+    def set_external(self):
+        if self.cb_external_poi.isChecked():
+            self.lbl_coordinate_input.setVisible(False)
+            self.lbl_x.setVisible(False)
+            self.le_x.setVisible(False)
+            self.lbl_y.setVisible(False)
+            self.le_y.setVisible(False)
+            self.pb_set_coord.setVisible(False)
+            self.cb_spec_sig_as_npy.setVisible(False)
+            
+            self.pb_open_poi.setVisible(True)
+            self.lbl_path_to_poi.setVisible(True)
+            
+            self.show_dot = False
+        else: 
+            self.lbl_coordinate_input.setVisible(True)
+            self.lbl_x.setVisible(True)
+            self.le_x.setVisible(True)
+            self.lbl_y.setVisible(True)
+            self.le_y.setVisible(True)
+            self.pb_set_coord.setVisible(True)
+            self.cb_spec_sig_as_npy.setVisible(True)
+            
+            self.pb_open_poi.setVisible(False)
+            self.lbl_path_to_poi.setVisible(False)
+            
+            self.show_dot = True
             
     def set_x(self):
         if self.le_x.text() != "":
@@ -103,7 +163,8 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         else: 
             self.x = 0
             
-        self.show_original_image()
+        # self.show_original_image()
+        self.update_pixel_of_interest()
         
     def set_y(self):
         if self.le_y.text() != "":     
@@ -117,11 +178,20 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         else:
             self.y = 0
             
-        self.show_original_image()
+        # self.show_original_image()
+        self.update_pixel_of_interest()
         
     def set_coordinates(self):
         self.set_x()
         self.set_y()
+        
+    def update_pixel_of_interest(self):
+        show_dot = True
+        if self.cb_external_poi.isChecked():
+            show_dot = False
+            
+        self.show_original_image(show_dot)
+        self.spectral_signature = self.full_img.read_pixel(self.x, self.y)
     
     def get_x(self):
         return self.x
@@ -157,9 +227,9 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
             
     def get_threshold(self):
         return self.threshold
-    
-    def show_original_image(self):
-        if self.path_to_file == "":
+
+    def show_original_image(self, show_dot = True):
+        if self.path_to_img == "":
             return
         
         try:
@@ -173,17 +243,18 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         bytes_per_line = 3 * width
         q_img = QImage(img.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
         
-        painter = QPainter(q_img)
-        painter.setPen(QPen(QColor(255, 0, 0), 10))
-        painter.drawPoint(self.y, self.x) # X and Y are opposite order because of how envi processes the image. 
-        painter.end()
+        if self.show_dot:
+            painter = QPainter(q_img)
+            painter.setPen(QPen(QColor(255, 0, 0), 10))
+            painter.drawPoint(self.y, self.x) # X and Y are opposite order because of how envi processes the image. 
+            painter.end()
         
         self.lbl_original_image.setPixmap(QPixmap.fromImage(q_img))
         
     
     def get_image_from_hdr(self):
         try:
-            self.full_img = envi.open(self.path_to_file)
+            self.full_img = envi.open(self.path_to_img)
         except Exception as e:
             print(self.get_timestamp() + " Error: " + str(e))
                         
@@ -206,7 +277,7 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
     def generate_result_images(self):
         print(self.get_timestamp() + " Generating...")
         
-        self.corr_raw = self.correlation_coefficients()
+        self.corr_raw = self.correlation_coefficients(self.spectral_signature)
         self.corr_img = self.raw_to_img(self.corr_raw, cv2.COLORMAP_JET)
      
         self.corr_thresh_raw = self.threshold_correlation_coefficients()
@@ -228,14 +299,14 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         bytes_per_line = 3 * width
         self.corr_thresh_q_img = QImage(self.corr_thresh_img.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
 
-    def correlation_coefficients(self):
+    def correlation_coefficients(self, poi):
         corr = np.ones((self.full_img.shape[0], self.full_img.shape[1]))
         
         for i in range(self.full_img.shape[0]):
             for j in range(self.full_img.shape[1]):
                 pixel = self.full_img.read_pixel(i, j)
-                corr[i,j] = stats.pearsonr(pixel, self.full_img.read_pixel(self.x, self.y))[0]
-
+                corr[i,j] = stats.pearsonr(pixel, poi)[0]
+                
         return corr
     
     def threshold_correlation_coefficients(self):
@@ -260,45 +331,55 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
     def get_timestamp(self):
         return time.strftime("%H:%M:%S", time.localtime())
     
-    def set_save_directory(self):
-        options = QFileDialog.Options()
-        folder_name = QFileDialog.getExistingDirectory(self, "QFileDialog.getExistingDirectory()", "", options=options)
-        self.path_to_save_folder = folder_name
-        
-        if folder_name:
-            print("Updated path to save folder: ", self.path_to_save_folder)
-    
     def save_as(self):
-        self.set_save_directory()
-        
         if self.path_to_save_folder == "":
-            self.path_to_save_folder = self.path_to_file
-        
-        if self.path_to_file == "" or not self.generated:
+            self.path_to_save_folder = self.path_to_img
+            
+        if self.path_to_img == "":
             return
         
-        name = self.path_to_file[self.path_to_file.rfind("/")+1:-4]
+        if self.cb_spec_sig_as_npy.isChecked():
+            try:
+                options = QFileDialog.Options()
+                path, _ = QFileDialog.getSaveFileName(self, 'Save File', self.path_to_img[:-4] + "_spectral_signature", "Numpy files (*.npy)", options=options)
+                np.save(path, self.spectral_signature)
+                print("Saving spectral signature")
+            except Exception as e:
+                print(self.get_timestamp() + " Error when saving spectral signature as npy: " + str(e))
+        
+        if self.path_to_img == "" or not self.generated:
+            return
+        
+        name = self.path_to_img[self.path_to_img.rfind("/")+1:-4]
         
         if self.cb_corr_as_npy.isChecked():
             try:
-                np.save(self.path_to_save_folder + "/" + name + "correlation_coefficients.npy", self.corr_raw)
+                options = QFileDialog.Options()
+                path, _ = QFileDialog.getSaveFileName(self, 'Save File', self.path_to_img[:-4] + "_correlation_coefficients", "Numpy files (*.npy)", options=options)
+                np.save(path, self.corr_raw)
             except Exception as e:
                 print(self.get_timestamp() + " Error when saving correlation coefficients as npy: " + str(e))
                 
         if self.cb_corr_as_png.isChecked():
             try:
-                cv2.imwrite(self.path_to_save_folder + "/" + name + "correlation_coefficients.png", self.corr_img)
+                options = QFileDialog.Options()
+                path, _ = QFileDialog.getSaveFileName(self, 'Save File', self.path_to_img[:-4] + "_correlation_coefficients", "PNG files (*.png)", options=options)
+                cv2.imwrite(path, self.corr_img)
             except Exception as e:
                 print(self.get_timestamp() + " Error when saving corrrelatinon coefficients as png: " + str(e))
         
         if self.cb_thresholded_as_npy.isChecked():
             try: 
-                np.save(self.path_to_save_folder + "/" + name + "thresholded_correlation_coefficients_" + str(self.threshold) + ".npy", self.corr_thresh_raw)
+                options = QFileDialog.Options()
+                path, _ = QFileDialog.getSaveFileName(self, 'Save File', self.path_to_img[:-4] + "_thresholded_correlation_coefficients_" + str(self.threshold), "Numpy files (*.npy)", options=options)
+                np.save(path, self.corr_thresh_raw)
             except Exception as e:
                 print(self.get_timestamp() + " Error when saving thresholded corrrelation coefficients as npy: " + str(e))
                 
         if self.cb_thresholded_as_png.isChecked():
             try:
-                cv2.imwrite(self.path_to_save_folder + "/" + name + "thresholded_correlation_coefficients_" + str(self.threshold) + ".png", self.corr_thresh_img)
+                options = QFileDialog.Options()
+                path, _ = QFileDialog.getSaveFileName(self, 'Save File', self.path_to_img[:-4] + "_thresholded_correlation_coefficients_" + str(self.threshold), "PNG files (*.png)", options=options)
+                cv2.imwrite(path, self.corr_thresh_img)
             except Exception as e:
                 print(self.get_timestamp() + " Error when saving thresholded corrrelation coefficients as png: " + str(e))
