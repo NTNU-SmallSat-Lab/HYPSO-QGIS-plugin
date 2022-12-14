@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>930</width>
-    <height>704</height>
+    <height>595</height>
    </rect>
   </property>
   <property name="font">
@@ -191,7 +191,7 @@ No file selected</string>
            </layout>
           </item>
           <item row="0" column="0">
-           <widget class="QPushButton" name="pb_open_file">
+           <widget class="QPushButton" name="pb_open_img">
             <property name="maximumSize">
              <size>
               <width>100</width>
@@ -540,41 +540,6 @@ pixel of interest</string>
    <item row="1" column="2" rowspan="2">
     <layout class="QVBoxLayout" name="verticalLayout_6">
      <item>
-      <widget class="QCheckBox" name="cb_spec_sig_as_npy">
-       <property name="text">
-        <string>Spectral signature as npy array</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="cb_corr_as_png">
-       <property name="text">
-        <string>Correlation coefficients as png</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="cb_corr_as_npy">
-       <property name="text">
-        <string>Correlation coefficients as npy array</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="cb_thresholded_as_png">
-       <property name="text">
-        <string>Thresholded corr coff as png</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="cb_thresholded_as_npy">
-       <property name="text">
-        <string>Thresholded corr coff as npy array</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
         <widget class="QPushButton" name="pb_save_as">
@@ -619,10 +584,39 @@ pixel of interest</string>
   </layout>
  </widget>
  <tabstops>
-  <tabstop>pb_open_file</tabstop>
+  <tabstop>pb_open_img</tabstop>
+  <tabstop>cb_external_poi</tabstop>
+  <tabstop>pb_open_poi</tabstop>
+  <tabstop>le_x</tabstop>
+  <tabstop>le_y</tabstop>
+  <tabstop>pb_set_coord</tabstop>
+  <tabstop>select_td_method</tabstop>
+  <tabstop>pb_generate</tabstop>
+  <tabstop>le_threshold</tabstop>
+  <tabstop>sld_threshold</tabstop>
+  <tabstop>rb_thresholded</tabstop>
+  <tabstop>pb_save_as</tabstop>
+  <tabstop>pb_exit</tabstop>
  </tabstops>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>pb_save_as</sender>
+   <signal>clicked()</signal>
+   <receiver>TargetDetectionDialogBase</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>654</x>
+     <y>695</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>464</x>
+     <y>362</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <slots>
   <signal>thresholdSlider()</signal>
   <slot>openFileButton_clicked()</slot>

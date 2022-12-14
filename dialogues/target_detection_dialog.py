@@ -24,7 +24,7 @@
 
 import os
 
-from PyQt5.QtWidgets import QFileDialog, QDialog
+from PyQt5.QtWidgets import QFileDialog, QDialog, QListWidgetItem
 import PyQt5.uic as uic
 from PyQt5.QtGui import QImage, QPainter, QPen, QColor, QPixmap
 
@@ -36,6 +36,7 @@ import numpy as np
 import scipy.stats as stats
 import time
 import matplotlib.pyplot as plt
+import shutil
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -53,11 +54,10 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
         
-        self.pb_open_file.clicked.connect(self.set_path_to_img)
+        self.pb_open_img.clicked.connect(self.set_path_to_img)
         self.pb_open_poi.clicked.connect(self.set_path_to_poi)
         self.pb_set_coord.clicked.connect(self.set_coordinates)
         self.pb_generate.clicked.connect(self.generate_result_images)
-        self.pb_save_as.clicked.connect(self.save_as)
         self.pb_exit.clicked.connect(self.close)
         
         self.sld_threshold.valueChanged.connect(self.set_threshold_by_slider)
@@ -134,7 +134,6 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
             self.lbl_y.setVisible(False)
             self.le_y.setVisible(False)
             self.pb_set_coord.setVisible(False)
-            self.cb_spec_sig_as_npy.setVisible(False)
             
             self.pb_open_poi.setVisible(True)
             self.lbl_path_to_poi.setVisible(True)
@@ -147,7 +146,6 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
             self.lbl_y.setVisible(True)
             self.le_y.setVisible(True)
             self.pb_set_coord.setVisible(True)
-            self.cb_spec_sig_as_npy.setVisible(True)
             
             self.pb_open_poi.setVisible(False)
             self.lbl_path_to_poi.setVisible(False)
@@ -352,56 +350,3 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         
     def get_timestamp(self):
         return time.strftime("%H:%M:%S", time.localtime())
-    
-    def save_as(self):
-        if self.path_to_save_folder == "":
-            self.path_to_save_folder = self.path_to_img
-            
-        if self.path_to_img == "":
-            return
-        
-        if self.cb_spec_sig_as_npy.isChecked():
-            try:
-                options = QFileDialog.Options()
-                path, _ = QFileDialog.getSaveFileName(self, 'Save File', self.path_to_img[:-4] + "_spectral_signature", "Numpy files (*.npy)", options=options)
-                np.save(path, self.spectral_signature)
-                print("Saving spectral signature")
-            except Exception as e:
-                print(self.get_timestamp() + " Error when saving spectral signature as npy: " + str(e))
-        
-        if self.path_to_img == "" or not self.generated:
-            return
-        
-        name = self.path_to_img[self.path_to_img.rfind("/")+1:-4]
-        
-        if self.cb_corr_as_npy.isChecked():
-            try:
-                options = QFileDialog.Options()
-                path, _ = QFileDialog.getSaveFileName(self, 'Save File', self.path_to_img[:-4] + "_correlation_coefficients", "Numpy files (*.npy)", options=options)
-                np.save(path, self.corr_raw)
-            except Exception as e:
-                print(self.get_timestamp() + " Error when saving correlation coefficients as npy: " + str(e))
-                
-        if self.cb_corr_as_png.isChecked():
-            try:
-                options = QFileDialog.Options()
-                path, _ = QFileDialog.getSaveFileName(self, 'Save File', self.path_to_img[:-4] + "_correlation_coefficients", "PNG files (*.png)", options=options)
-                cv2.imwrite(path, self.corr_img)
-            except Exception as e:
-                print(self.get_timestamp() + " Error when saving corrrelatinon coefficients as png: " + str(e))
-        
-        if self.cb_thresholded_as_npy.isChecked():
-            try: 
-                options = QFileDialog.Options()
-                path, _ = QFileDialog.getSaveFileName(self, 'Save File', self.path_to_img[:-4] + "_thresholded_correlation_coefficients_" + str(self.threshold), "Numpy files (*.npy)", options=options)
-                np.save(path, self.corr_thresh_raw)
-            except Exception as e:
-                print(self.get_timestamp() + " Error when saving thresholded corrrelation coefficients as npy: " + str(e))
-                
-        if self.cb_thresholded_as_png.isChecked():
-            try:
-                options = QFileDialog.Options()
-                path, _ = QFileDialog.getSaveFileName(self, 'Save File', self.path_to_img[:-4] + "_thresholded_correlation_coefficients_" + str(self.threshold), "PNG files (*.png)", options=options)
-                cv2.imwrite(path, self.corr_thresh_img)
-            except Exception as e:
-                print(self.get_timestamp() + " Error when saving thresholded corrrelation coefficients as png: " + str(e))

@@ -31,6 +31,7 @@ from .resources import *
 from .hypso_1_data_analysis_dialog import Hypso1DataAnalysisDialog
 from .dialogues.hypso_1_dialog import Hypso1Dialog
 from .dialogues.target_detection_dialog import TargetDetectionDialog
+from .dialogues.target_detection_save import TargetDetectionSave
 import os.path
 
 
@@ -196,6 +197,13 @@ class Hypso1DataAnalysis:
             if self.dlg.do_target_detection.isChecked():
                 self.target_detection_dlg = TargetDetectionDialog()
                 self.target_detection_dlg.show()
+                result = self.target_detection_dlg.exec_()
+                if result:
+                    self.target_detection_save = TargetDetectionSave(self.target_detection_dlg)
+                    self.target_detection_save.show()
+                    result = self.target_detection_save.exec_()
+                    if result:
+                        self.target_detection_save.close()
             
             if self.dlg.do_atmospheric_correction.isChecked():
                 self.atmospheric_correction_dlg = Hypso1Dialog()
