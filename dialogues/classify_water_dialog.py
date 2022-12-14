@@ -166,8 +166,8 @@ class ClassifyWater(QDialog, FORM_CLASS):
             self.water_pixel_pos_2 = tuple(map(int, self.input_pixel_2.text().split(",")))
         if self.input_pixel_3.text() != "":
             self.water_pixel_pos_3 = tuple(map(int, self.input_pixel_3.text().split(",")))
-        
-        self.perform_cube_calibration()
+            
+        self.show_img(self.calibrated_img, self.label_new_img, paint=True)
 
 
     def perform_atmospheric_correction(self):
