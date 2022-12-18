@@ -57,7 +57,7 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         self.pb_open_img.clicked.connect(self.set_path_to_img)
         self.pb_open_poi.clicked.connect(self.set_path_to_poi)
         self.pb_set_coord.clicked.connect(self.set_coordinates)
-        self.pb_generate.clicked.connect(self.generate_result_images)
+        self.pb_generate_result_imgs.clicked.connect(self.generate_result_imgs)
         self.pb_exit.clicked.connect(self.close)
         
         self.sld_threshold.valueChanged.connect(self.set_threshold_by_slider)
@@ -66,7 +66,7 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         self.le_y.editingFinished.connect(self.set_y)
         self.le_threshold.editingFinished.connect(self.set_threshold_by_input)
         
-        self.rb_thresholded.toggled.connect(self.update_result_image)
+        self.rb_thresholded.toggled.connect(self.update_result_img)
         
         self.cb_external_poi.toggled.connect(self.set_external)
         
@@ -76,7 +76,7 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         self.path_to_save_folder = ""
         self.x = 0
         self.y = 0
-        self.generated = False
+        self.result_generated = False
         self.spectral_signature = np.array
         self.show_dot = True
         self.full_img_loaded = False
@@ -112,7 +112,7 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
             print(self.get_timestamp() + " Opening file: " + self.path_to_img)
             self.lbl_path_to_img.setText("Filename: \n" + self.path_to_img.split("/").pop())
  
-            self.show_original_image()
+            self.show_original_img()
         else:
             self.lbl_path_to_img.setText("Filename: \nNo file selected")
             
@@ -190,7 +190,7 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         if self.cb_external_poi.isChecked():
             show_dot = False
             
-        self.show_original_image(show_dot)
+        self.show_original_img(show_dot)
         self.spectral_signature = self.full_img.read_pixel(self.x, self.y)
     
     def get_x(self):
@@ -205,10 +205,10 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         
         print(self.get_timestamp() + " Setting threshold to: " + str(self.threshold))
         
-        if self.generated:
-            self.update_threshold_image()
+        if self.result_generated:
+            self.update_threshold_img()
             if self.rb_thresholded.isChecked():
-                self.update_result_image()
+                self.update_result_img()
         
     def set_threshold_by_input(self):
         try:
@@ -220,20 +220,20 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
             
             return
         
-        if self.generated:
-            self.update_threshold_image()
+        if self.result_generated:
+            self.update_threshold_img()
             if self.rb_thresholded.isChecked():
-                self.update_result_image()
+                self.update_result_img()
             
     def get_threshold(self):
         return self.threshold
 
-    def show_original_image(self, show_dot = True):
+    def show_original_img(self, show_dot = True):
         if self.path_to_img == "":
             return
         
         try:
-            img = self.get_image_from_hdr()
+            img = self.get_img_from_hdr()
         except Exception as e:
             print(self.get_timestamp() + " Error: " + str(e))
             
@@ -244,15 +244,18 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         q_img = QImage(img.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
         
         if self.show_dot:
-            painter = QPainter(q_img)
-            painter.setPen(QPen(QColor(255, 0, 0), 10))
-            painter.drawPoint(self.y, self.x) # X and Y are opposite order because of how envi processes the image. 
-            painter.end()
+            self.paint_dot(q_img)
         
-        self.lbl_original_image.setPixmap(QPixmap.fromImage(q_img))
+        self.lbl_original_img.setPixmap(QPixmap.fromImage(q_img))
         
+        
+    def paint_dot(self, q_img):
+        painter = QPainter(q_img)
+        painter.setPen(QPen(QColor(255, 0, 0), 10))
+        painter.drawPoint(self.y, self.x) # X and Y are opposite order because of how envi processes the image. 
+        painter.end()
     
-    def get_image_from_hdr(self):
+    def get_img_from_hdr(self):
         try:
             self.full_img = envi.open(self.path_to_img)
             self.full_img_loaded = True
@@ -275,7 +278,7 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         
         return img
     
-    def generate_result_images(self):
+    def generate_result_imgs(self):
         print(self.get_timestamp() + " Generating...")
         
         self.corr_raw = self.correlation_coefficients(self.spectral_signature)
@@ -289,10 +292,10 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         self.corr_q_img = QImage(self.corr_img.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
         self.corr_thresh_q_img = QImage(self.corr_thresh_img.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
         
-        self.update_result_image()
-        self.generated = True
+        self.update_result_img()
+        self.result_generated = True
         
-    def update_threshold_image(self):
+    def update_threshold_img(self):
         self.corr_thresh_raw = self.threshold_correlation_coefficients()
         self.corr_thresh_img = self.raw_to_img(self.corr_thresh_raw, cv2.COLORMAP_BONE)
         
@@ -342,11 +345,11 @@ class TargetDetectionDialog(QDialog, FORM_CLASS):
         
         return img
     
-    def update_result_image(self):
+    def update_result_img(self):
         if self.rb_thresholded.isChecked():
-            self.lbl_result_image.setPixmap(QPixmap.fromImage(self.corr_thresh_q_img))
+            self.lbl_result_img.setPixmap(QPixmap.fromImage(self.corr_thresh_q_img))
         else:
-            self.lbl_result_image.setPixmap(QPixmap.fromImage(self.corr_q_img))
+            self.lbl_result_img.setPixmap(QPixmap.fromImage(self.corr_q_img))
         
     def get_timestamp(self):
-        return time.strftime("%H:%M:%S", time.localtime())
+        return time.strftime("%H:%M:%S", time.localtime()) 

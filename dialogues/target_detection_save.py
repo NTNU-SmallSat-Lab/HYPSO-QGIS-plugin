@@ -71,7 +71,7 @@ class TargetDetectionSave(QDialog, FORM_CLASS):
             except Exception as e:
                 print(self.parent.get_timestamp() + " Error when saving spectral signature as npy: " + str(e))
         
-        if self.parent.path_to_img == "" or not self.parent.generated:
+        if self.parent.path_to_img == "" or not self.parent.result_generated:
             return
         
         name = self.parent.path_to_img[self.parent.path_to_img.rfind("/")+1:-4]
