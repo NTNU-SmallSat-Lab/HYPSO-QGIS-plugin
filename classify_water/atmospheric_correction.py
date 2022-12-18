@@ -16,7 +16,7 @@ def atmospheric_correction(calibrated_envi_img, calibrated_np_array, water_pixel
             pixel = calibrated_np_array[i,j]
 
             corrected_pixel =  (pixel - avg_intercept) / avg_slope
-            pixel = pixel - corrected_pixel
+            pixel = pixel - abs(corrected_pixel)
 
             corrected_np_array[i,j,:] = pixel
 

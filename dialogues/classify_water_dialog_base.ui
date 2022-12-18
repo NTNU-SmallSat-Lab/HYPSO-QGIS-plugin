@@ -187,7 +187,7 @@
      <x>10</x>
      <y>50</y>
      <width>211</width>
-     <height>421</height>
+     <height>441</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -331,7 +331,7 @@
         <item>
          <widget class="QLabel" name="label_pixel_3">
           <property name="text">
-           <string>Pixel 3 (blue)</string>
+           <string>Pixel 3 (yellow)</string>
           </property>
          </widget>
         </item>
