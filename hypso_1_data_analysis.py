@@ -28,8 +28,8 @@ from PyQt5.QtWidgets import QAction
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
+from .dialogues.classify_water_dialog import ClassifyWater
 from .hypso_1_data_analysis_dialog import Hypso1DataAnalysisDialog
-from .dialogues.hypso_1_dialog import Hypso1Dialog
 from .dialogues.target_detection_dialog import TargetDetectionDialog
 import os.path
 
@@ -206,10 +206,10 @@ class Hypso1DataAnalysis:
                     pass
                 # pass
             
-            if self.dlg.do_atmospheric_correction.isChecked():
-                self.atmospheric_correction_dlg = Hypso1Dialog()
-                self.atmospheric_correction_dlg.show()
-                result = self.atmospheric_correction_dlg.exec_()
+            if self.dlg.do_classify_water.isChecked():
+                self.classify_water_dlg = ClassifyWater()
+                self.classify_water_dlg.show()
+                result = self.classify_water_dlg.exec_()
                 if result:
                     # Do something useful here - delete the line containing pass and
                     # substitute with your code.
